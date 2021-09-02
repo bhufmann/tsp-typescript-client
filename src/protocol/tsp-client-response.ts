@@ -4,6 +4,8 @@
  * the status code and message of the HTTP response, and the plain text attached to this response.
  */
 export class TspClientResponse<T> {
+    private static readonly BIGINT_FIELDS = ['start', 'end', 'time', 'duration', 'startTime', 'endTime'];
+
     private readonly responseModel: T | undefined;
     private readonly statusCode: number;
     private readonly statusMessage: string;
@@ -20,7 +22,16 @@ export class TspClientResponse<T> {
         this.statusCode = statusCode;
         this.statusMessage = statusMessage;
         try {
-            this.responseModel = JSON.parse(text) as T;
+            this.responseModel = JSON.parse(text, (key, value) => {
+                if (TspClientResponse.BIGINT_FIELDS.includes(key) && typeof value === 'string') {
+                    try {
+                        return BigInt(value);
+                    } catch (error) {
+                        return value;
+                    }
+                }
+                return value; 
+            }) as T;
         } catch (error) {
         }
     }

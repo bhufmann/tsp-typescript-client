@@ -8,7 +8,8 @@ import { TspClientResponse } from './tsp-client-response';
  */
 export class RestClient {
     private static async performRequest<T>(verb: string, url: string, body?: any): Promise<TspClientResponse<T>> {
-        const jsonBody: string = JSON.stringify(body);
+        const replacer = (key, value) => (typeof value === 'bigint') ? value.toString() : value;
+        const jsonBody: string = JSON.stringify(body, replacer);
         const response = await fetch(url, {
             headers: {
                 'Accept': 'application/json',
